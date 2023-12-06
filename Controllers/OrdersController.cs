@@ -1,4 +1,6 @@
-﻿using MediatRAndCQRS.Mapping;
+﻿using MediatR;
+using MediatRAndCQRS.Mapping;
+using MediatRAndCQRS.Queries;
 using MediatRAndCQRS.Repositories;
 using MediatRAndCQRS.Requests;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +15,14 @@ namespace MediatRAndCQRS.Controllers
 		private readonly ILogger<OrdersController> _logger;
 		private readonly IOrdersRepository _ordersRepository;
 		private readonly IMapper _mapper;
+		private readonly IMediator _mediator;
 
-		public OrdersController(ILogger<OrdersController> logger, IOrdersRepository ordersRepository, IMapper mapper)
+		public OrdersController(ILogger<OrdersController> logger, IOrdersRepository ordersRepository, IMapper mapper, IMediator mediator)
 		{
 			_logger = logger;
 			_ordersRepository = ordersRepository;
 			_mapper = mapper;
+			_mediator = mediator;
 		}
 
 		[HttpPost("")]
@@ -48,9 +52,9 @@ namespace MediatRAndCQRS.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetAllOrders()
 		{
-			var orders = await _ordersRepository.GetOrdersAsync();
-			var orderResponses = _mapper.MapOrderDtosToOrderResponses(orders);
-			return Ok(orderResponses);
+			var query = new GetAllOrdersQuery();
+			var result = await _mediator.Send(query);
+			return Ok(result);
 		}
     }
 }
